@@ -1,0 +1,204 @@
+#####################################################################################################
+# Del I - Makefiler
+#####################################################################################################
+
+För att slippa skriva långa kommandon för att kompilera koden, inkludera externa bibliotek och dylikt
+samt för att både kompilera och köra koden via ett enda kommando så kan en så kallad makefil användas.
+
+En makefil är en fil utan filändelse, som kan öppnas i nanoeditorn via nedanstående kommando:
+----------------------------------------------------------------------------------------------------
+$ nano makefile
+----------------------------------------------------------------------------------------------------
+
+I makefilen används ett eller flera så kallade targets, vilket är segment innehållande ett eller flera Linuxkommandon.
+Vid behov kan sedan ett specifikt target köras, annars om ingen target anges, så körs automatiskt det target som
+har deklarerats längst upp i mainfilen.
+
+Normalt används olika targets för att kompilera samt köra ett program. 
+För att skapa ett nytt target skrivs namnet på detta utan indentering och avslutas med ett kolon.
+Innehållet i detta target skall sedan indenteras via ett tabtecken, inte blanksteg.
+
+Ett lämpligt namn på ett target för kompilering är build. 
+Nedan deklareras ett target som kompilerar en fil döpt main.c och skapar en körbar fil döpt main:
+----------------------------------------------------------------------------------------------------
+build:
+	gcc main.c -o main -Wall
+----------------------------------------------------------------------------------------------------
+
+Ovanstående target kan sedan användas för att kompilera programkoden via följande kommando:
+----------------------------------------------------------------------------------------------------
+$ make build
+----------------------------------------------------------------------------------------------------
+
+Ett lämpligt namn på ett target för att köra ett program är run.
+Nedan deklareras ett target som kör den körbara filen main:
+----------------------------------------------------------------------------------------------------
+run:
+	./main
+----------------------------------------------------------------------------------------------------
+
+Ovanstående target kan sedan användas för att köra programmet via följande kommando:
+----------------------------------------------------------------------------------------------------
+$ make run
+----------------------------------------------------------------------------------------------------
+
+Ofta är det önskvärt att både kompilera och köra ett program direkt. För att åstadkomma detta kan
+ett target döpt all användas, som kör ovanstående targets build samt run för kompilering och körning:
+----------------------------------------------------------------------------------------------------
+all: build run
+----------------------------------------------------------------------------------------------------
+
+Notera att namn på targets som skall köras skrivs på samma rad som targetdeklarationen.
+
+Ovanstående target kan sedan användas för att kompilera och sedan köra programmet via följande kommando:
+----------------------------------------------------------------------------------------------------
+$ make all
+----------------------------------------------------------------------------------------------------
+
+Ovanstående target kan deklareras längst upp i makefilen så att både kompilering och körning körs 
+automatiskt om inget target anges. Detta fungerar då det target som deklareras längst upp i makefilen
+körs om inget target har angets. Därmed kan makefilens innehåll skrivas såsom visas nedan:
+----------------------------------------------------------------------------------------------------
+all: build run
+
+build:
+	gcc main.c -o main -Wall
+run:
+	./main
+----------------------------------------------------------------------------------------------------
+
+Via ovanstående makefil så kan både kompilering och körning av ett program genomföras via följande kommando:
+----------------------------------------------------------------------------------------------------
+$ make
+----------------------------------------------------------------------------------------------------
+
+Det går givetvis också att ange target all för kompilering och körning ifall man vill:
+----------------------------------------------------------------------------------------------------
+$ make all
+----------------------------------------------------------------------------------------------------
+
+För att enbart kompilera koden kan följande kommando användas:
+----------------------------------------------------------------------------------------------------
+$ make build
+----------------------------------------------------------------------------------------------------
+
+För att enbart köra programmet utan att kompilera koden kan följande kommando användas:
+----------------------------------------------------------------------------------------------------
+$ make run
+----------------------------------------------------------------------------------------------------
+
+OBS! Viktigt när man jobbat med makefiler är indentera via tabs i stället för blanksteg. 
+Om blanksteg används får man ett felmeddelande i stil med följande:
+----------------------------------------------------------------------------------------------------
+makefile:2: *** missing separator.  Stop.
+----------------------------------------------------------------------------------------------------
+
+#####################################################################################################
+# Del II - libgpiod
+#####################################################################################################
+
+libgpiod är Linux officiella interface för GPIO-implementering, skrivet i C.
+gpiod står för "GPIO Driver", alltså drivsrutiner för GPIO-implementering i Linux.
+
+För att installera libgpiod för implementering i C kan följande kommando användas:
+----------------------------------------------------------------------------------------------------
+$ sudo apt install libgpiod-dev
+----------------------------------------------------------------------------------------------------
+
+Några termer som används i samband med libgpiod:
+----------------------------------------------------------------------------------------------------
+GPIO-linje = PIN.
+
+GPIO-chip = uppsättning av GPIO-linjer / PINs, varav GPIO-chippet gpiochip0 innehåller 
+samtliga GPIO-linjer på Raspberry Pi och ligger på filsökvägen /dev/gpiochip0.
+
+offset = PIN-nummer.
+
+consumer = användare, används för alias till GPIO-linjer.
+----------------------------------------------------------------------------------------------------
+
+För att kompilera ett C-program via libgpiod måste detta bibliotek inkluderas, vilket åstadkommes
+genom att lägga till -l gpiod i kommandot, där -l står för load. Som exempel, för att kompilera en
+fil döpt main.c med libgpiod till en körbar fil döpt main kan följande kommando användas:
+----------------------------------------------------------------------------------------------------
+$ gcc main.c -o main -Wall
+----------------------------------------------------------------------------------------------------
+
+Programmet kan sedan köras i vanlig ordning:
+----------------------------------------------------------------------------------------------------
+$ ./main
+----------------------------------------------------------------------------------------------------
+
+Ännu bättre är såklart att använda en makefil såsom nedan:
+----------------------------------------------------------------------------------------------------
+all: build run
+
+build:
+	gcc main.c -o main -Wall
+run:
+	./main
+----------------------------------------------------------------------------------------------------
+
+Programmet kan sedan köras och kompileras direkt via följande kommando:
+----------------------------------------------------------------------------------------------------
+$ make
+----------------------------------------------------------------------------------------------------
+
+Vid programexekvering måste gpiochip0 öppnas för att kunna använda GPIO-linjerna.
+Detta kan åstadkommas via en GPIO-chippekare döpt chip0 enligt nedan:
+----------------------------------------------------------------------------------------------------
+struct gpiod_chip* chip0 = gpiod_chip_open("/dev/gpiochip0"); 
+----------------------------------------------------------------------------------------------------
+
+Efter att ha öppnat gpiochip0 kan GPIO-linjer initieras vid behov. 
+Antag att en lysdiod ansluts till PIN 17 samt en tryckknapp ansluts till PIN 27. 
+För implementering kan då två GPIO-linjepekare döpa led1 samt button1 initieras enligt nedan.
+----------------------------------------------------------------------------------------------------
+struct gpiod_line* led1 = gpiod_chip_get_line(chip0, 17); 
+struct gpiod_line* button1 = gpiod_chip_get_line(chip0, 27); 
+----------------------------------------------------------------------------------------------------
+
+Datariktningen på GPIO-linjerna kan sedan väljas. Samtidigt som datariktningen väljs kan ett alias tilldelas.
+För utportar kan också GPIO-linjens startvärde väljas. 
+
+För att sätta lysdioden ansluten till PIN 17 till utport med alias led1 samt släckt vid start, samtidigt som
+tryckknappens PIN 27 sätts till inport med alias "button1" kan följande instruktion användas:
+----------------------------------------------------------------------------------------------------
+gpiod_line_request_output(led1, "led1", 0);
+gpiod_line_request_input(button1, "button1");
+----------------------------------------------------------------------------------------------------
+
+För att tända eller släcka lysdioden kan följande instruktioner användas, där utsignalen sätts 
+till 1 (hög) eller 0 (låg):
+----------------------------------------------------------------------------------------------------
+gpiod_line_set_value(led1, 1); 
+gpiod_line_set_value(led1, 0); 
+----------------------------------------------------------------------------------------------------
+
+För att läsa tryckknappens insignal kan följande instruktion användas, där returvärde 1 indikerar hög insignal, 
+returvärde 0 indikerar låg insignal samt -1 indikerar feltillstånd:
+----------------------------------------------------------------------------------------------------
+const int button_pressed = gpiod_line_get_value(button1); 
+----------------------------------------------------------------------------------------------------
+
+GPIO-linjernas alias kan när som helst erhållas som en sträng via följande funktionsanrop:
+----------------------------------------------------------------------------------------------------
+const char* s1 = gpiod_line_consumer(led1); 
+const char* s2 = gpiod_line_consumer(button1); 
+----------------------------------------------------------------------------------------------------
+
+GPIO-linjernas PIN-nummer kan när som helst erhållas som en sträng via följande funktionsanrop:
+----------------------------------------------------------------------------------------------------
+const unsigned int led_pin = gpiod_line_offset(led1); 
+const unsigned int button_pin = gpiod_line_offset(button1); 
+----------------------------------------------------------------------------------------------------
+
+För att inaktivera GPIO-linjerna när de inte längre behövs kan följande instruktioner användas:
+----------------------------------------------------------------------------------------------------
+gpiod_line_release(led1); 
+gpiod_line_release(button1); 
+----------------------------------------------------------------------------------------------------
+
+
+
+
