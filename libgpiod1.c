@@ -1,13 +1,13 @@
 /*************************************************************************************
-* Implementering av libgpiod, Linux officiella inteface för GPIO-implementering.
+* Implementering av libgpiod, Linux officiella inteface fÃ¶r GPIO-implementering.
 * Aktuellt GPIO-chip gpiochip0 innehar enhetens samtliga GPIO-linjer (PINs).
-* GPIO-chippet måste öppnas vid start för att kunna aktivera GPIO-linjer för
+* GPIO-chippet mÃ¥ste Ã¶ppnas vid start fÃ¶r att kunna aktivera GPIO-linjer fÃ¶r
 * sensorer och aktuatorer.
 *
-* Kompilera programmet och skapa en körbar fil döpt libgpiod1 enligt nedan:
+* Kompilera programmet och skapa en kÃ¶rbar fil dÃ¶pt libgpiod1 enligt nedan:
 * gcc main.c -o libgpiod1 -Wall -l gpiod
 *
-* Kör sedan programmet via följande kommando:
+* KÃ¶r sedan programmet via fÃ¶ljande kommando:
 * ./libgpiod1
 **************************************************************************************/
 
@@ -17,7 +17,7 @@
 #include <unistd.h>
 
 /*************************************************************************************
-* leds_blink: Blinkar två lysdioder med valbar fördröjningstid.
+* leds_blink: Blinkar tvÃ¥ lysdioder med valbar fÃ¶rdrÃ¶jningstid.
 **************************************************************************************/
 static void leds_blink(struct gpiod_line* led1, struct gpiod_line* led2, const size_t delay_time)
 {
@@ -34,10 +34,10 @@ static void leds_blink(struct gpiod_line* led1, struct gpiod_line* led2, const s
 }
 
 /*************************************************************************************
-* main: Ansluter två lysdioder till PIN 17 och 22 samt en tryckknapp till PIN 27,
+* main: Ansluter tvÃ¥ lysdioder till PIN 17 och 22 samt en tryckknapp till PIN 27,
 *       vilket implementeras via GPIO-linjepekare led1, led2 samt button1. Vid
 *       nedtryckning av tryckknappen blinkar lysdioderna var 500:e millisekund,
-*       övrig tid hålls de släckta.
+*       Ã¶vrig tid hÃ¥lls de slÃ¤ckta.
 **************************************************************************************/
 int main(void)
 {
