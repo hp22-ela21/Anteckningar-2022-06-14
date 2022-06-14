@@ -121,7 +121,7 @@ För att kompilera ett C-program via libgpiod måste detta bibliotek inkluderas,
 genom att lägga till -l gpiod i kommandot, där -l står för load. Som exempel, för att kompilera en
 fil döpt main.c med libgpiod till en körbar fil döpt main kan följande kommando användas:
 ----------------------------------------------------------------------------------------------------
-$ gcc main.c -o main -Wall
+$ gcc main.c -o main -Wall -l gpiod
 ----------------------------------------------------------------------------------------------------
 
 Programmet kan sedan köras i vanlig ordning:
@@ -134,7 +134,7 @@ $ ./main
 all: build run
 
 build:
-	gcc main.c -o main -Wall
+	gcc main.c -o main -Wall -l gpiod
 run:
 	./main
 ----------------------------------------------------------------------------------------------------
