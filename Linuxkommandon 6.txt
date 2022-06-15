@@ -93,6 +93,18 @@ Om blanksteg används får man ett felmeddelande i stil med följande:
 makefile:2: *** missing separator.  Stop.
 ----------------------------------------------------------------------------------------------------
 
+När ett givet target körs så skrivs dess innehåll ut i terminalen. För att dölja innehållet kan varje
+kommando föregås av tecknet @. Som exempel, för att dölja samtliga kommandon vid användning av 
+ovanstående makefil kan dess innehåll korrigeras till följande:
+----------------------------------------------------------------------------------------------------
+all: build run
+
+build:
+	@gcc main.c -o main -Wall
+run:
+	@./main
+----------------------------------------------------------------------------------------------------
+
 #####################################################################################################
 # Del II - libgpiod
 #####################################################################################################
